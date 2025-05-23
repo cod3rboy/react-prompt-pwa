@@ -1,4 +1,5 @@
 # react-prompt-pwa library
+[![npm version](https://badge.fury.io/js/react-prompt-pwa.svg)](https://badge.fury.io/js/react-prompt-pwa)
 
 Yet another library to display pwa installation prompt in a react application.
 
