@@ -6,6 +6,14 @@ function App() {
   const { supported, installed, install } = usePwaPrompt();
   const isSupported = supported();
   const isInstalled = installed();
+  const handleOnInstall = async () => {
+    const isDone = await install();
+    if (isDone) {
+      console.log("pwa installation done");
+    } else {
+      console.log("pwa installation cancelled");
+    }
+  };
 
   return (
     <>
@@ -33,7 +41,7 @@ function App() {
       {isSupported && !isInstalled && (
         <div>
           <p className="read-the-docs">Click button below to install the app</p>
-          <button onClick={install}>Install</button>
+          <button onClick={handleOnInstall}>Install</button>
         </div>
       )}
     </>

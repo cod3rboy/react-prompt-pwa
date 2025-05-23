@@ -1,5 +1,8 @@
+import "./PwaPrompt.css";
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { platforms, type PlatformType } from "../platform-detect";
+import { IosPromptUI } from "./ios/IosPromptUI";
+import { AndroidPromptUI } from "./android/AndroidPromptUI";
 
 export type PwaPromptProps = {
   platform: PlatformType;
@@ -17,39 +20,6 @@ export function PwaPrompt({ platform, nativePromptRef }: PwaPromptProps) {
 
   const [open, setOpen] = useState<boolean>(false);
 
-  const openNativePrompt = (event: BeforeInstallPromptEvent): Promise<void> =>
-    new Promise((reject, resolve) => {
-      event
-        .prompt()
-        .then(() => event.userChoice)
-        .then((choiceResult) => {
-          if (choiceResult.outcome === "accepted") {
-            resolve();
-          } else {
-            reject();
-          }
-        })
-        .catch((err) => {
-          reject(err);
-        });
-    });
-
-  const openManualPrompt = (): Promise<void> => {
-    setOpen(true);
-
-    return new Promise((resolve, reject) => {
-      awaitingPromiseRef.current = { resolve, reject };
-    });
-  };
-
-  const showPrompt = (): Promise<void> => {
-    if (nativePromptRef.current) {
-      return openNativePrompt(nativePromptRef.current);
-    }
-
-    return openManualPrompt();
-  };
-
   const handleDone = () => {
     setOpen(false);
 
@@ -58,37 +28,73 @@ export function PwaPrompt({ platform, nativePromptRef }: PwaPromptProps) {
     }
   };
 
-  const handleDismiss = () => {
+  const handleCancel = () => {
     setOpen(false);
 
     if (awaitingPromiseRef.current) {
-      awaitingPromiseRef.current.reject();
+      awaitingPromiseRef.current.reject(
+        new Error("pwa installation request was dismissed")
+      );
     }
   };
 
   useEffect(() => {
+    const openNativePrompt = (event: BeforeInstallPromptEvent): Promise<void> =>
+      new Promise((resolve, reject) => {
+        event
+          .prompt()
+          .then(() => event.userChoice)
+          .then((choiceResult) => {
+            if (choiceResult.outcome === "accepted") {
+              resolve();
+            } else {
+              throw new Error("pwa installation request was dismissed");
+            }
+          })
+          .catch((err) => {
+            reject(err);
+          });
+      });
+
+    const openManualPrompt = (): Promise<void> => {
+      setOpen(true);
+
+      return new Promise((resolve, reject) => {
+        awaitingPromiseRef.current = { resolve, reject };
+      });
+    };
+
+    const showPrompt = (): Promise<void> => {
+      if (nativePromptRef.current) {
+        return openNativePrompt(nativePromptRef.current);
+      }
+
+      return openManualPrompt();
+    };
+
     const previousValue = window.showPwaPrompt;
     window.showPwaPrompt = showPrompt;
 
     return () => {
       window.showPwaPrompt = previousValue;
     };
-  }, []);
+  }, [nativePromptRef]);
 
   if (platform === platforms.NATIVE || platform === platforms.OTHER) {
     return null;
   }
 
-  // TODO: implement platform-specific user interface
   return open ? (
-    <div>
-      <h3>Install this app</h3>
-      <ol>
-        <li>First instruction</li>
-        <li>Second instruction</li>
-      </ol>
-      <button onClick={handleDone}>Done</button>
-      <button onClick={handleDismiss}>Dismiss</button>
+    <div className="pwa-prompt">
+      {platform === platforms.IDEVICE ? (
+        <IosPromptUI onCancel={handleCancel} onDone={handleDone} />
+      ) : (
+        <AndroidPromptUI
+          platform={platform}
+          onCancel={handleCancel}
+          onDone={handleDone}
+        />
+      )}
     </div>
   ) : null;
 }
