@@ -1,54 +1,57 @@
-# React + TypeScript + Vite
+# react-prompt-pwa library
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Yet another library to display pwa installation prompt in a react application.
 
-Currently, two official plugins are available:
+## Install
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```
+npm install react-prompt-pwa
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Before using this library make sure your react application fulfils the [criteria for an installable progressive web app](https://web.dev/articles/install-criteria).
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Usage
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+It consists of two components - `PwaPromptProvider` component and `usePwaPrompt` hook.
+
+Add provider in the root of your react application -
+
+```ts
+import { PwaPromptProvider } from "react-prompt-pwa";
+
+function App() {
+  // app code
+
+  return (
+    <PwaPromptProvider>
+    {/* rest of the components */}
+    </PwaPromptProvider>
+  )
+}
 ```
+
+Use the hook in some other component in the hierarchy - 
+```ts
+import { usePwaPrompt } from "react-prompt-pwa";
+function SomeComponent() {
+  const {supported, installed, install} = usePwaPrompt();
+  // component code
+}
+```
+
+## Demo
+Demo app url: https://demo-react-prompt-pwa.netlify.app/ 
+
+**Screenshots (manual instruction prompt)**
+
+| Android                                                         | iOS                                                     |
+| --------------------------------------------------------------- | ------------------------------------------------------- |
+| ![install instructions prompt android](./docs/android-demo.gif) | ![install instructions prompt iOS](./docs/ios-demo.gif) |
+
+## Docs
+The `usePwaPrompt` hook returns an object with three properties -
+1. `supported`: Whether the pwa installation is supported by the browser client.
+2. `installed`: Whether the react app is opened through installed PWA.
+3. `install`: This function shows the prompt for pwa installation when supported by the browser client. It returns a boolean value indicating whether user has successfully installed the PWA.
+
+Please note that not every browser supports PWA installation and some have different instructions for manual install. Please feel free to raise an issue or a PR if you want to add support for your desired browser ✌️.
