@@ -4,16 +4,17 @@
   "private": false,
   "version": "1.0.0",
   "type": "module",
-  "main": "dist/main.js",
-  "types": "dist/main.d.ts",
+  "main": "dist-lib/main.js",
+  "types": "dist-lib/main.d.ts",
   "files": [
-    "dist"
+    "dist-lib"
   ],
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b ./tsconfig.lib.json && vite build",
+    "build:lib": "tsc -b ./tsconfig.lib.json && vite build",
+    "build": "tsc -b && vite build --config ./vite.config.app.ts",
     "lint": "eslint .",
-    "preview": "vite preview",
+    "preview": "vite preview --config ./vite.config.app.ts",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
