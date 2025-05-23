@@ -1,8 +1,21 @@
 {
   "name": "react-prompt-pwa",
+  "repository": {
+    "type": "github",
+    "url": "https://github.com/cod3rboy/react-prompt-pwa.git"
+  },
+  "homepage": "https://demo-react-prompt-pwa.netlify.app",
+  "description": "Display PWA install prompt in any react application.",
+  "bugs": "https://github.com/cod3rboy/react-prompt-pwa/issues",
+  "keywords": [
+    "progressive-web-app",
+    "reactjs",
+    "react-library"
+  ],
   "author": "Dheeraj Kumar",
   "private": false,
-  "version": "1.0.0",
+  "version": "1.0.1",
+  "license": "MIT",
   "type": "module",
   "main": "dist-lib/main.js",
   "types": "dist-lib/main.d.ts",
