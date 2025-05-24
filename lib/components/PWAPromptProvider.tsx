@@ -1,14 +1,9 @@
-import { useCallback, useState, type PropsWithChildren } from "react";
-import { getPlatform, platforms } from "../platform-detect";
-import {
-  type IPwaPromptContext,
-  PwaPromptContext,
-} from "../contexts/pwa-prompt";
-import { useEffect, useRef } from "react";
+import { useCallback, useMemo, useState, type PropsWithChildren } from "react";
+import { getPlatform, platforms, type PlatformType } from "../platform-detect";
+import { PwaPromptContext } from "../contexts/pwa-prompt";
+import { useEffect } from "react";
 import { getLogger } from "../logger";
 import { PwaPrompt } from "./PwaPrompt";
-
-const platform = getPlatform();
 
 export type PwaPromptProviderProps = {
   enableLogging?: boolean;
@@ -19,7 +14,9 @@ export function PwaPromptProvider({
   children,
 }: PropsWithChildren<PwaPromptProviderProps>) {
   const logger = getLogger(!enableLogging);
-  const deferredPrompt = useRef<BeforeInstallPromptEvent>(null);
+  const [deferredPrompt, setDeferredPrompt] =
+    useState<BeforeInstallPromptEvent | null>(null);
+  const [platform, setPlatform] = useState<PlatformType>(platforms.OTHER);
 
   const supported = useCallback(() => {
     if (platform === platforms.NATIVE) {
@@ -34,7 +31,7 @@ export function PwaPromptProvider({
 
     logger.info("supported: false");
     return false;
-  }, [logger]);
+  }, [logger, platform]);
 
   const installed = useCallback(() => {
     const isStandalone = !!(
@@ -60,7 +57,7 @@ export function PwaPromptProvider({
       return false;
     }
 
-    if (platform === platforms.NATIVE && !deferredPrompt.current) {
+    if (platform === platforms.NATIVE && !deferredPrompt) {
       logger.info("native platform did not trigger beforeinstallprompt event");
       return false;
     }
@@ -75,22 +72,24 @@ export function PwaPromptProvider({
       }
       return false;
     }
-  }, [logger]);
+  }, [logger, platform, deferredPrompt]);
 
-  const [contextValue, setContextValue] = useState<IPwaPromptContext>({
-    supported,
-    installed,
-    install,
-  });
-
-  const handleBeforeInstallPromptEvent = (e: Event) => {
-    e.preventDefault();
-    deferredPrompt.current = e as BeforeInstallPromptEvent;
-    logger.info("beforeinstallprompt event fired and captured");
-    setContextValue({ supported, installed, install });
-  };
+  const contextValue = useMemo(
+    () => ({ supported, installed, install }),
+    [supported, installed, install]
+  );
 
   useEffect(() => {
+    setPlatform(getPlatform());
+  }, []);
+
+  useEffect(() => {
+    const handleBeforeInstallPromptEvent = (e: Event) => {
+      e.preventDefault();
+      // logger.info("beforeinstallprompt event fired and captured");
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
+    };
+
     window.addEventListener(
       "beforeinstallprompt",
       handleBeforeInstallPromptEvent
@@ -106,7 +105,7 @@ export function PwaPromptProvider({
   return (
     <PwaPromptContext.Provider value={contextValue}>
       {children}
-      <PwaPrompt platform={platform} nativePromptRef={deferredPrompt} />
+      <PwaPrompt platform={platform} nativePromptEvent={deferredPrompt} />
     </PwaPromptContext.Provider>
   );
 }

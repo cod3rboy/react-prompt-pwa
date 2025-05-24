@@ -1,18 +1,18 @@
 import "./PwaPrompt.css";
-import { useEffect, useRef, useState, type RefObject } from "react";
+import { useEffect, useRef, useState } from "react";
 import { platforms, type PlatformType } from "../platform-detect";
 import { IosPromptUI } from "./ios/IosPromptUI";
 import { AndroidPromptUI } from "./android/AndroidPromptUI";
 
 export type PwaPromptProps = {
   platform: PlatformType;
-  nativePromptRef: RefObject<BeforeInstallPromptEvent | null>;
+  nativePromptEvent: BeforeInstallPromptEvent | null;
 };
 
 type PromiseResolveFn<T> = (value: T | PromiseLike<T>) => T;
 type PromiseRejectFn = (reason?: Error) => void;
 
-export function PwaPrompt({ platform, nativePromptRef }: PwaPromptProps) {
+export function PwaPrompt({ platform, nativePromptEvent }: PwaPromptProps) {
   const awaitingPromiseRef = useRef<{
     resolve: PromiseResolveFn<void>;
     reject: PromiseRejectFn;
@@ -65,8 +65,8 @@ export function PwaPrompt({ platform, nativePromptRef }: PwaPromptProps) {
     };
 
     const showPrompt = (): Promise<void> => {
-      if (nativePromptRef.current) {
-        return openNativePrompt(nativePromptRef.current);
+      if (nativePromptEvent) {
+        return openNativePrompt(nativePromptEvent);
       }
 
       return openManualPrompt();
@@ -78,7 +78,7 @@ export function PwaPrompt({ platform, nativePromptRef }: PwaPromptProps) {
     return () => {
       window.showPwaPrompt = previousValue;
     };
-  }, [nativePromptRef]);
+  }, [nativePromptEvent]);
 
   if (platform === platforms.NATIVE || platform === platforms.OTHER) {
     return null;
