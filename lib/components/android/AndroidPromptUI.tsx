@@ -1,4 +1,4 @@
-import "./AndroidPromptUI.css";
+import classes from "./AndroidPromptUI.module.css";
 import type { ReactNode } from "react";
 import { type PlatformType } from "../../platform-detect";
 import { IconFirefoxA2HS } from "./IconFirefoxA2HS";
@@ -48,15 +48,15 @@ export function AndroidPromptUI({
   onDone,
 }: AndroidPromptUIProps) {
   return (
-    <div className="a-prompt">
-      <p className="a-title">Instructions to install app</p>
-      <ul className="a-instructions">
+    <div className={classes.aPrompt}>
+      <p className={classes.aTitle}>Instructions to install app</p>
+      <ul className={classes.aInstructions}>
         <li>{instructions[platform][0]}</li>
         <li>{instructions[platform][1]}</li>
       </ul>
-      <div className="a-actions">
+      <div className={classes.aActions}>
         <button onClick={onCancel}>Cancel</button>
-        <button className="filled" onClick={onDone}>
+        <button className={classes.filled} onClick={onDone}>
           Done
         </button>
       </div>

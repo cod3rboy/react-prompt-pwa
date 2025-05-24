@@ -1,4 +1,4 @@
-import "./PwaPrompt.css";
+import classes from "./PwaPrompt.module.css";
 import { useEffect, useRef, useState } from "react";
 import { platforms, type PlatformType } from "../platform-detect";
 import { IosPromptUI } from "./ios/IosPromptUI";
@@ -85,7 +85,7 @@ export function PwaPrompt({ platform, nativePromptEvent }: PwaPromptProps) {
   }
 
   return open ? (
-    <div className="pwa-prompt">
+    <div className={classes.pwaPrompt}>
       {platform === platforms.IDEVICE ? (
         <IosPromptUI onCancel={handleCancel} onDone={handleDone} />
       ) : (
