@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { platforms, type PlatformType } from "../platform-detect";
 import { IosPromptUI } from "./ios/IosPromptUI";
 import { AndroidPromptUI } from "./android/AndroidPromptUI";
+import { createPortal } from "react-dom";
 
 export type PwaPromptProps = {
   platform: PlatformType;
@@ -84,17 +85,20 @@ export function PwaPrompt({ platform, nativePromptEvent }: PwaPromptProps) {
     return null;
   }
 
-  return open ? (
-    <div className={classes.pwaPrompt}>
-      {platform === platforms.IDEVICE ? (
-        <IosPromptUI onCancel={handleCancel} onDone={handleDone} />
-      ) : (
-        <AndroidPromptUI
-          platform={platform}
-          onCancel={handleCancel}
-          onDone={handleDone}
-        />
-      )}
-    </div>
-  ) : null;
+  return open
+    ? createPortal(
+        <div className={classes.pwaPrompt}>
+          {platform === platforms.IDEVICE ? (
+            <IosPromptUI onCancel={handleCancel} onDone={handleDone} />
+          ) : (
+            <AndroidPromptUI
+              platform={platform}
+              onCancel={handleCancel}
+              onDone={handleDone}
+            />
+          )}
+        </div>,
+        document.body
+      )
+    : null;
 }
