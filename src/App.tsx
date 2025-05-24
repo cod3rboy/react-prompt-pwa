@@ -5,7 +5,7 @@ import { usePwaPrompt } from "../";
 function App() {
   const { supported, installed, install } = usePwaPrompt();
   const isSupported = supported();
-  const isInstalled = installed();
+  const isInstalled = installed(true);
   const handleOnInstall = async () => {
     const isDone = await install();
     if (isDone) {

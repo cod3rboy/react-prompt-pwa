@@ -3,6 +3,13 @@
   "name": "Demo PWA",
   "short_name": "Demo",
   "start_url": "/",
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "https://demo-react-prompt-pwa.netlify.app/site.webmanifest"
+    }
+  ],
+  "scope": "/",
   "description": "Demo application made to test react-prompt-pwa library",
   "screenshots": [
     {

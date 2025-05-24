@@ -52,7 +52,7 @@ Demo app url: https://demo-react-prompt-pwa.netlify.app/
 ## Docs
 The `usePwaPrompt` hook returns an object with three properties -
 1. `supported`: Whether the pwa installation is supported by the browser client.
-2. `installed`: Whether the react app is opened through installed PWA.
-3. `install`: This function shows the prompt for pwa installation when supported by the browser client. It returns a boolean value indicating whether user has successfully installed the PWA.
+2. `installed`: Whether the react app is opened through installed PWA. If `true` is passed to the optional boolean parameter, it  instead checks whether PWA is present among the installed apps on the device (currently supports Android OS only). If you use the optional parameter, make sure to also define `related_applications` field in the `app.webmanifest` file of your PWA ([reference](https://web.dev/articles/get-installed-related-apps#tell_your_pwa_about_itself)).
+3. `install`: Displays the PWA installation prompt when supported by the browser client. Returns a boolean promise indicating whether user has successfully installed the PWA.
 
 Please note that not every browser supports PWA installation and some have different instructions for manual install. Please feel free to raise an issue or a PR if you want to add support for your desired browser ✌️.

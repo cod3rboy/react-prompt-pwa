@@ -1,7 +1,7 @@
 import { createContext } from "react";
 export interface IPwaPromptContext {
   supported: () => boolean;
-  installed: () => boolean;
+  installed: (checkInstalledRelatedApps?: boolean) => boolean;
   install: () => Promise<boolean>;
 }
 

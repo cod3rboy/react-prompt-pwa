@@ -1,9 +1,34 @@
 import { useCallback, useMemo, useState, type PropsWithChildren } from "react";
-import { getPlatform, platforms, type PlatformType } from "../platform-detect";
+import {
+  getPlatform,
+  isAndroidOS,
+  platforms,
+  type PlatformType,
+} from "../platform-detect";
 import { PwaPromptContext } from "../contexts/pwa-prompt";
 import { useEffect } from "react";
 import { getLogger } from "../logger";
 import { PwaPrompt } from "./PwaPrompt";
+
+type NavigatorWithGetInstalledRelatedApps = Navigator & {
+  getInstalledRelatedApps?: () => Promise<
+    {
+      id?: string;
+      platform: string;
+      url?: string;
+      version?: string;
+    }[]
+  >;
+};
+
+const InstallationStatuses = {
+  Unknown: "unknown" as const,
+  Installed: "installed" as const,
+  NotInstalled: "not-installed" as const,
+};
+
+type AppInstallationStatus =
+  (typeof InstallationStatuses)[keyof typeof InstallationStatuses];
 
 export type PwaPromptProviderProps = {
   enableLogging?: boolean;
@@ -17,6 +42,8 @@ export function PwaPromptProvider({
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
   const [platform, setPlatform] = useState<PlatformType>(platforms.OTHER);
+  const [installationStatus, setInstallationStatus] =
+    useState<AppInstallationStatus>(InstallationStatuses.Unknown);
 
   const supported = useCallback(() => {
     if (platform === platforms.NATIVE) {
@@ -33,23 +60,33 @@ export function PwaPromptProvider({
     return false;
   }, [logger, platform]);
 
-  const installed = useCallback(() => {
-    const isStandalone = !!(
-      window.navigator as Navigator & { standalone?: boolean }
-    )["standalone"];
+  const installed = useCallback(
+    (checkInstalledRelatedApps?: boolean) => {
+      if (
+        checkInstalledRelatedApps &&
+        installationStatus !== InstallationStatuses.Unknown
+      ) {
+        return installationStatus === InstallationStatuses.Installed;
+      }
 
-    const isDisplayModeStandalone = window.matchMedia(
-      "(display-mode: standalone)"
-    ).matches;
+      const isStandalone = !!(
+        window.navigator as Navigator & { standalone?: boolean }
+      )["standalone"];
 
-    if (isStandalone || isDisplayModeStandalone) {
-      logger.info("installed: true. Already in standalone mode");
-      return true;
-    }
+      const isDisplayModeStandalone = window.matchMedia(
+        "(display-mode: standalone)"
+      ).matches;
 
-    logger.info("installed: false");
-    return false;
-  }, [logger]);
+      if (isStandalone || isDisplayModeStandalone) {
+        logger.info("installed: true. Already in standalone mode");
+        return true;
+      }
+
+      logger.info("installed: false");
+      return false;
+    },
+    [logger, installationStatus]
+  );
 
   const install = useCallback(async () => {
     if (platform === platforms.OTHER) {
@@ -82,6 +119,30 @@ export function PwaPromptProvider({
   useEffect(() => {
     setPlatform(getPlatform());
   }, []);
+
+  useEffect(() => {
+    if (!isAndroidOS()) {
+      return;
+    }
+
+    logger.info("detected os: android");
+
+    const nav = (window.navigator ||
+      navigator) as NavigatorWithGetInstalledRelatedApps;
+    if (!nav?.getInstalledRelatedApps) {
+      return;
+    }
+
+    nav.getInstalledRelatedApps().then((apps) => {
+      if (apps.length > 0) {
+        logger.info("pwa is installed on android");
+        setInstallationStatus(InstallationStatuses.Installed);
+      } else {
+        logger.info("pwa is not installed on android");
+        setInstallationStatus(InstallationStatuses.NotInstalled);
+      }
+    });
+  }, [logger]);
 
   useEffect(() => {
     const handleBeforeInstallPromptEvent = (e: Event) => {

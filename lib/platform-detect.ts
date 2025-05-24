@@ -92,3 +92,8 @@ export function getPlatform() {
 
   return platform;
 }
+
+export function isAndroidOS(): boolean {
+  const { isAndroid } = getDeviceInfoFromUserAgent();
+  return isAndroid;
+}
